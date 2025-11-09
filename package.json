@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc && vite build && electron-builder",
-    "preview": "vite preview"
+  "dev": "vite",
+  "dev:electron": "node ./scripts/run-dev-electron.cjs",
+  "build": "vue-tsc && vite build && electron-builder",
+  "preview": "vite preview"
   },
   "dependencies": {
     "@primevue/themes": "^4.4.1",

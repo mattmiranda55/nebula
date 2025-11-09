@@ -1,5 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
+import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import require$$0$4 from "events";
 import require$$0$3 from "process";
 import require$$0$7 from "net";
@@ -25960,21 +25962,42 @@ async function disconnect() {
   await driver.disconnect();
   driver = null;
 }
+const __filename$1 = fileURLToPath(import.meta.url);
+const __dirname$1 = path.dirname(__filename$1);
 let win = null;
+function resolveRendererHtml() {
+  const appRoot = path.join(__dirname$1, "..");
+  const candidates = [
+    path.join(appRoot, "renderer/index.html"),
+    path.join(appRoot, "dist/index.html"),
+    path.join(appRoot, "index.html")
+  ];
+  const existing = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!existing) {
+    throw new Error("Renderer entry point not found. Did you run `vite build`?");
+  }
+  return existing;
+}
 async function createWindow() {
   win = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname$1, "preload.mjs"),
       contextIsolation: true,
       nodeIntegration: false
     }
   });
-  if (app.isPackaged) {
-    win.loadFile(path.join(__dirname, "../renderer/index.html"));
+  const rendererUrl = process.env["ELECTRON_RENDERER_URL"];
+  if (!app.isPackaged && rendererUrl) {
+    await win.loadURL(rendererUrl);
   } else {
-    win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    const htmlPath = resolveRendererHtml();
+    await win.loadFile(htmlPath);
+  }
+  try {
+    win.webContents.openDevTools({ mode: "detach" });
+  } catch (e) {
   }
   win.on("closed", () => {
     win = null;
