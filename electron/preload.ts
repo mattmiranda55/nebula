@@ -28,3 +28,9 @@ contextBridge.exposeInMainWorld("db", {
   query: (sql: string) => ipcRenderer.invoke("db:query", sql),
   disconnect: () => ipcRenderer.invoke("db:disconnect"),
 });
+
+contextBridge.exposeInMainWorld("terminal", {
+  write: (data: any) => ipcRenderer.send("terminal-write", data),
+  onData: (callback: any) =>
+    ipcRenderer.on("terminal-data", (_, data) => callback(data))
+});

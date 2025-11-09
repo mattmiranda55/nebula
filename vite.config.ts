@@ -11,6 +11,11 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
+        // Provide a noop onstart handler so the plugin doesn't auto-start Electron
+        // when we already spawn Electron from `scripts/run-dev-electron.cjs`.
+        onstart: () => {
+          /* noop: electron will be started by run-dev-electron.cjs */
+        },
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.

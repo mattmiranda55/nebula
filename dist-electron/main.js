@@ -25996,7 +25996,7 @@ async function createWindow() {
     await win.loadFile(htmlPath);
   }
   try {
-    win.webContents.openDevTools({ mode: "detach" });
+    win.webContents.openDevTools();
   } catch (e) {
   }
   win.on("closed", () => {

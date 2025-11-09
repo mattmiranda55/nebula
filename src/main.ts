@@ -3,23 +3,29 @@ import './style.css'
 import App from './App.vue'
 import PrimeVue from 'primevue/config';
 import Material from '@primeuix/themes/material';
-import Checkbox from 'primevue/checkbox';
-import Password from 'primevue/password';
-import Button from 'primevue/button';
-import DataTable from 'primevue/datatable';
-import Paginator from 'primevue/paginator';
-import Tree from 'primevue/tree';
-import Divider from 'primevue/divider';
-import Panel from 'primevue/panel';
-import Splitter from 'primevue/splitter';
-import Drawer from 'primevue/drawer';
-import Tooltip from 'primevue/tooltip';
-import FileUpload from 'primevue/fileupload';
-import Menu from 'primevue/menu';
-import Toast from 'primevue/toast';
-import Message from 'primevue/message';
-import ProgressBar from 'primevue/progressbar';
-import ProgressSpinner from 'primevue/progressspinner';
+import {
+  Checkbox,
+  Password,
+  Button,
+  DataTable,
+  Paginator,
+  Tree,
+  Divider,
+  Panel,
+  Splitter,
+  Drawer,
+  Tooltip,
+  FileUpload,
+  Menu,
+  Toast,
+  Message,
+  ProgressBar,
+  ProgressSpinner,
+  Column,
+  Card,
+  InputText,
+  SplitterPanel
+} from 'primevue';
 
 const components = {
   Checkbox,
@@ -38,7 +44,11 @@ const components = {
   Toast,
   Message,
   ProgressBar,
-  ProgressSpinner
+  ProgressSpinner,
+  Column,
+  Card,
+  InputText,
+  SplitterPanel
 };
 // Create app instance (do not mount before configuring plugins/components)
 const app = createApp(App);
@@ -48,7 +58,6 @@ app.use(PrimeVue, {
         preset: Material,
         options: {
             prefix: 'p',
-            darkModeSelector: 'system',
             cssLayer: false
         }
     }
