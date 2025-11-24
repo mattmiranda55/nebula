@@ -1,8 +1,6 @@
 import { createApp, nextTick } from 'vue'
-import './style.css'
 import App from './App.vue'
 import PrimeVue from 'primevue/config';
-import Material from '@primeuix/themes/material';
 import {
   Checkbox,
   Password,
@@ -24,8 +22,17 @@ import {
   Column,
   Card,
   InputText,
-  SplitterPanel
+  SplitterPanel,
+  Dialog,
+  Dropdown
 } from 'primevue';
+
+// icons
+import 'primevue/resources/themes/aura-dark-purple/theme.css';
+import 'primevue/resources/primevue.min.css';
+import 'primeicons/primeicons.css';
+
+import './style.css'
 
 const components = {
   Checkbox,
@@ -48,27 +55,20 @@ const components = {
   Column,
   Card,
   InputText,
-  SplitterPanel
+  SplitterPanel,
+  Dialog,
+  Dropdown
 };
-// Create app instance (do not mount before configuring plugins/components)
+
 const app = createApp(App);
 
-app.use(PrimeVue, {
-  theme: {
-        preset: Material,
-        options: {
-            prefix: 'p',
-            cssLayer: false
-        }
-    }
-});
+app.use(PrimeVue);
 
 Object.entries(components).forEach(([name, component]) => {
   app.component(name, component as any);
 });
 
-// Mount the app
-app.mount('#app');
+app.mount('#app')
 
 // Hook into IPC after mount. Use optional chaining to avoid runtime errors
 // when preload script didn't expose the API (e.g., running in plain browser).
@@ -81,3 +81,4 @@ nextTick(() => {
     // swallow — nothing to do in non-Electron environments
   }
 });
+

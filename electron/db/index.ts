@@ -1,36 +1,82 @@
 import * as mysql from "./mysql";
+import * as postgres from "./postgres";
+import * as sqlite from "./sqlite";
+import * as mongodb from "./mongodb";
 
-type DB = "mysql" | "postgres" | "sqlite";
+export type DatabaseType = "mysql" | "postgres" | "sqlite" | "mongodb";
 
-let driver : any = null;
+export type ConnectConfig =
+    | ({ type: "mysql" } & mysql.MysqlConnectConfig)
+    | ({ type: "postgres" } & postgres.PostgresConnectConfig)
+    | ({ type: "sqlite" } & sqlite.SqliteConnectConfig)
+    | ({ type: "mongodb" } & mongodb.MongoConnectConfig);
 
-export async function connect(config: any) {
-    switch (config.type as DB) {
-        case "mysql":
-            driver = mysql;
-            break;
-        case "postgres":
-            // driver = postgres;
-            throw new Error("Postgres support not implemented yet.");
-        case "sqlite":
-            // driver = sqlite;
-            throw new Error("SQLite support not implemented yet.");
-        default:
-            throw new Error("Unknown database type.");
-    }
-
-    return await driver.connect(config);
+export interface SchemaNode {
+    key: string;
+    label: string;
+    icon?: string;
+    children?: SchemaNode[];
 }
 
-export async function query(sql: string){
-    if(!driver) {
+interface DriverModule {
+    connect(config: any): Promise<{ success?: boolean; error?: string }>;
+    query(sql: string): Promise<{ rows: unknown[]; fields: string[] } | { error: string }>;
+    structure(): Promise<SchemaNode[]>;
+    disconnect(): Promise<void>;
+}
+
+let activeDriver: DriverModule | null = null;
+let activeType: DatabaseType | null = null;
+
+function resolveDriver(type: DatabaseType): DriverModule {
+    switch (type) {
+        case "mysql":
+            return mysql;
+        case "postgres":
+            return postgres;
+        case "sqlite":
+            return sqlite;
+        case "mongodb":
+            return mongodb;
+        default:
+            throw new Error("Unknown database driver");
+    }
+}
+
+export async function connect(config: ConnectConfig) {
+    if (activeDriver) {
+        await activeDriver.disconnect();
+    }
+
+    const driver = resolveDriver(config.type);
+    const result = await driver.connect(config);
+    activeDriver = driver;
+    activeType = config.type;
+    return result;
+}
+
+export async function query(sql: string) {
+    if (!activeDriver) {
         throw new Error("No active database connection.");
     }
-    return await driver.query(sql);
+
+    return await activeDriver.query(sql);
 }
 
-export async function disconnect(){
-    if(!driver) return;
-    await driver.disconnect();
-    driver = null;
+export async function structure(): Promise<SchemaNode[]> {
+    if (!activeDriver) {
+        throw new Error("No active database connection.");
+    }
+
+    return await activeDriver.structure();
+}
+
+export async function disconnect() {
+    if (!activeDriver) {
+        return;
+    }
+
+    await activeDriver.disconnect();
+    activeDriver = null;
+    activeType = null;
 }

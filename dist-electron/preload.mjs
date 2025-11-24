@@ -25,3 +25,7 @@ electron.contextBridge.exposeInMainWorld("db", {
   query: (sql) => electron.ipcRenderer.invoke("db:query", sql),
   disconnect: () => electron.ipcRenderer.invoke("db:disconnect")
 });
+electron.contextBridge.exposeInMainWorld("terminal", {
+  write: (data) => electron.ipcRenderer.send("terminal-write", data),
+  onData: (callback) => electron.ipcRenderer.on("terminal-data", (_, data) => callback(data))
+});

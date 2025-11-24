@@ -25997,11 +25997,9 @@ async function createWindow() {
   }
   try {
     win.webContents.openDevTools();
-  } catch (e) {
+  } catch {
   }
-  win.on("closed", () => {
-    win = null;
-  });
+  win.on("closed", () => win = null);
 }
 app.whenReady().then(() => {
   createWindow();

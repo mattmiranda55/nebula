@@ -1,67 +1,126 @@
-<script setup lang="ts">
-// NebulaLayout: lightweight slot-driven IDE layout
-// Slots: activity, sidebar, header, editor, panel, right, status, command-palette
-</script>
-
 <template>
-	<div class="nebula-root">
-
-		<div class="sidebar">
-			<slot name="sidebar" />
-		</div>
-
-		<header class="header">
+	<div class="nebula-shell">
+		<header class="nebula-shell__header">
 			<slot name="header" />
 		</header>
-
-		<main class="editor">
-			<slot name="editor" />
-		</main>
-
-		<section class="terminal">
-			<slot name="terminal" />
-		</section>
-
-		<!-- overlay slot for things like command palette -->
-		<div class="overlay">
+		<div class="nebula-shell__body">
+			<Splitter class="nebula-shell__splitter">
+				<SplitterPanel :size="23" :minSize="14" class="nebula-shell__sidebar">
+					<slot name="sidebar" />
+				</SplitterPanel>
+				<SplitterPanel :size="77" :minSize="40" class="nebula-shell__main">
+					<div class="nebula-shell__content">
+						<slot name="main" />
+					</div>
+				</SplitterPanel>
+			</Splitter>
+		</div>
+		<footer class="nebula-shell__footer">
+			<slot name="footer" />
+		</footer>
+		<div class="nebula-shell__overlay">
 			<slot name="command-palette" />
 		</div>
 	</div>
 </template>
 
 <style scoped>
-:root {
-	--nebula-activity-width: 56px;
-	--nebula-sidebar-width: 280px;
-	--nebula-right-width: 320px;
-	--nebula-panel-height: 220px;
-	--nebula-status-height: 24px;
-}
-.nebula-root {
+.nebula-shell {
+	min-height: 100vh;
 	display: grid;
-	height: 100vh;
-	grid-template-columns: var(--nebula-activity-width) var(--nebula-sidebar-width) 1fr var(--nebula-right-width);
-	grid-template-rows: auto 1fr var(--nebula-panel-height) var(--nebula-status-height);
-	gap: 0;
-	background: var(--surface, #0f1720);
-	color: var(--on-surface, #e6eef6);
+	grid-template-rows: auto 1fr auto;
+	color: var(--txt-primary);
 }
-.activity { grid-column: 1 / 2; grid-row: 1 / 4; border-right: 1px solid rgba(255,255,255,0.03); display:flex; align-items:flex-start; }
-.sidebar { grid-column: 2 / 3; grid-row: 1 / 3; border-right: 1px solid rgba(255,255,255,0.03); overflow:auto; }
-.header { grid-column: 3 / 4; grid-row: 1 / 2; border-bottom: 1px solid rgba(255,255,255,0.03); display:flex; align-items:center; padding:0 12px; }
-.editor { grid-column: 3 / 4; grid-row: 2 / 3; overflow:auto; padding:12px; }
-.right { grid-column: 4 / 5; grid-row: 1 / 3; border-left: 1px solid rgba(255,255,255,0.03); overflow:auto; }
-.panel { grid-column: 2 / 5; grid-row: 3 / 4; border-top: 1px solid rgba(255,255,255,0.03); overflow:auto; }
-.status { grid-column: 1 / 5; grid-row: 4 / 5; border-top: 1px solid rgba(255,255,255,0.03); display:flex; align-items:center; padding:0 12px; }
-.overlay { position: fixed; inset: 0; pointer-events: none; }
-.overlay > * { pointer-events: auto; }
 
-/* small responsive tweak */
-@media (max-width: 900px) {
-	.nebula-root { grid-template-columns: var(--nebula-activity-width) 1fr; grid-template-rows: auto 1fr var(--nebula-panel-height) var(--nebula-status-height); }
-	.sidebar { display:none; }
-	.right { display:none; }
-	.panel { grid-column: 1 / 3; }
-	.status { grid-column: 1 / 3; }
+.nebula-shell__header {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background: var(--bg-header);
+	box-shadow: 0 18px 24px rgba(3, 4, 21, 0.55);
+	border-bottom: 1px solid var(--border-soft);
+}
+
+.nebula-shell__body {
+	min-height: 0;
+}
+
+.nebula-shell__splitter {
+	height: 100%;
+	border: none;
+	background: transparent;
+}
+
+.nebula-shell__sidebar {
+	background: var(--bg-sidebar);
+	border-right: 1px solid var(--border-soft);
+	padding: 18px 14px;
+	backdrop-filter: blur(22px);
+	box-shadow: inset -24px 0 48px rgba(5, 7, 22, 0.45);
+	overflow: hidden;
+}
+
+.nebula-shell__sidebar ::-webkit-scrollbar {
+	width: 6px;
+}
+
+.nebula-shell__sidebar ::-webkit-scrollbar-thumb {
+	background: rgba(132, 94, 247, 0.38);
+	border-radius: 999px;
+}
+
+.nebula-shell__main {
+	background: transparent;
+	backdrop-filter: blur(24px);
+	overflow: hidden;
+}
+
+.nebula-shell__content {
+	height: 100%;
+	padding: 20px 24px 24px;
+	background: var(--bg-panel);
+	border-left: 1px solid rgba(127, 90, 240, 0.14);
+	border-right: 1px solid rgba(46, 226, 234, 0.09);
+	box-shadow: inset 0 0 56px rgba(8, 12, 38, 0.45);
+	border-radius: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.nebula-shell__footer {
+	height: 38px;
+	background: linear-gradient(90deg, rgba(12, 18, 43, 0.9) 0%, rgba(7, 11, 28, 0.95) 100%);
+	border-top: 1px solid var(--border-soft);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 18px;
+	color: var(--txt-secondary);
+	font-size: 12px;
+}
+
+.nebula-shell__footer:empty {
+	display: none;
+}
+
+.nebula-shell__overlay {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+}
+
+.nebula-shell__overlay > * {
+	pointer-events: auto;
+}
+
+@media (max-width: 1024px) {
+	.nebula-shell__content {
+		padding: 16px;
+	}
+
+	.nebula-shell__sidebar {
+		padding: 16px 12px;
+	}
 }
 </style>
+

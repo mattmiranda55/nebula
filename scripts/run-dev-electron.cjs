@@ -20,7 +20,7 @@ function waitForUrl(url, timeout = 15000) {
   });
 }
 
-const vite = spawn('npm', ['run', 'dev'], { stdio: ['ignore', 'pipe', 'inherit'] });
+const vite = spawn('bun', ['run', 'dev'], { stdio: ['ignore', 'pipe', 'inherit'] });
 
 vite.stdout.on('data', (chunk) => {
   const s = chunk.toString();
@@ -37,7 +37,7 @@ vite.on('error', (err) => {
     await waitForUrl(url, 20000);
     // Launch electron with renderer URL set
     const env = Object.assign({}, process.env, { ELECTRON_RENDERER_URL: url });
-    const electron = spawn('npx', ['electron', '.'], { stdio: 'inherit', env });
+    const electron = spawn('bunx', ['electron', '.'], { stdio: 'inherit', env });
 
     electron.on('exit', (code) => {
       process.exit(code);

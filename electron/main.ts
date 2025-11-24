@@ -3,8 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import pty from "node-pty";
-import os from "os";
 
 // Import your DB API
 import * as db from "./db";
@@ -57,29 +55,6 @@ async function createWindow() {
   } catch {}
 
   win.on("closed", () => (win = null));
-
-  //
-  // ✅ PTY SETUP MOVED HERE
-  //
-  const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
-
-  const ptyProcess = pty.spawn(shell, [], {
-    name: "xterm-color",
-    cols: 80,
-    rows: 24,
-    cwd: process.env.HOME,
-    env: process.env,
-  });
-
-  // PTY → Renderer
-  ptyProcess.onData((data) => {
-    win?.webContents.send("terminal-data", data);
-  });
-
-  // Renderer → PTY
-  ipcMain.on("terminal-write", (_, data) => {
-    ptyProcess.write(data);
-  });
 }
 
 
@@ -115,6 +90,15 @@ ipcMain.handle("db:connect", async (_, config) => {
 ipcMain.handle("db:query", async (_, sql: string) => {
   try {
     return await db.query(sql);
+  } catch (err: any) {
+    return { error: err.message };
+  }
+});
+
+ipcMain.handle("db:structure", async () => {
+  try {
+    const nodes = await db.structure();
+    return { nodes };
   } catch (err: any) {
     return { error: err.message };
   }

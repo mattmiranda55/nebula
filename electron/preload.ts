@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 contextBridge.exposeInMainWorld("db", {
   connect: (config: any) => ipcRenderer.invoke("db:connect", config),
   query: (sql: string) => ipcRenderer.invoke("db:query", sql),
+  structure: () => ipcRenderer.invoke("db:structure"),
   disconnect: () => ipcRenderer.invoke("db:disconnect"),
 });
 
