@@ -28,8 +28,8 @@ import {
 } from 'primevue';
 
 // icons
-import 'primevue/resources/themes/aura-dark-purple/theme.css';
-import 'primevue/resources/primevue.min.css';
+// import 'primevue/resources/themes/aura-dark-purple/theme.css';
+// import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
 
 import './style.css'

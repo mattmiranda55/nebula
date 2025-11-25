@@ -1,0 +1,27 @@
+[mysql]
+host=""
+port=""
+username=""
+password=""
+database=""
+
+[postgres]
+    [connection1]
+    host=""
+    port=""
+    username=""
+    password=""
+    database=""
+
+    [connection2]
+    host=""
+    port=""
+    username=""
+    password=""
+    database=""
+
+[sqlite]
+file=""
+
+[mongodb]
+host=""

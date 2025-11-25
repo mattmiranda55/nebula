@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import pg from "pg";
 import type { FieldDef } from "pg";
 
 export interface PostgresConnectConfig {
@@ -16,7 +16,11 @@ export interface SchemaNode {
 	children?: SchemaNode[];
 }
 
-let client: Client | null = null;
+const { Client } = pg;
+
+type PgClient = pg.Client;
+
+let client: PgClient | null = null;
 let cachedConfig: PostgresConnectConfig | null = null;
 
 export async function connect(config: PostgresConnectConfig) {

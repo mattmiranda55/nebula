@@ -1,7 +1,7 @@
-import * as mysql from "./mysql";
-import * as postgres from "./postgres";
-import * as sqlite from "./sqlite";
-import * as mongodb from "./mongodb";
+import * as mysql from "./mysql.js";
+import * as postgres from "./postgres.js";
+import * as sqlite from "./sqlite.js";
+import * as mongodb from "./mongodb.js";
 
 export type DatabaseType = "mysql" | "postgres" | "sqlite" | "mongodb";
 
@@ -26,18 +26,17 @@ interface DriverModule {
 }
 
 let activeDriver: DriverModule | null = null;
-let activeType: DatabaseType | null = null;
 
 function resolveDriver(type: DatabaseType): DriverModule {
     switch (type) {
         case "mysql":
-            return mysql;
+            return mysql as unknown as DriverModule;
         case "postgres":
-            return postgres;
+            return postgres as unknown as DriverModule;
         case "sqlite":
-            return sqlite;
+            return sqlite as unknown as DriverModule;
         case "mongodb":
-            return mongodb;
+            return mongodb as unknown as DriverModule;
         default:
             throw new Error("Unknown database driver");
     }
@@ -51,7 +50,6 @@ export async function connect(config: ConnectConfig) {
     const driver = resolveDriver(config.type);
     const result = await driver.connect(config);
     activeDriver = driver;
-    activeType = config.type;
     return result;
 }
 
@@ -78,5 +76,4 @@ export async function disconnect() {
 
     await activeDriver.disconnect();
     activeDriver = null;
-    activeType = null;
 }

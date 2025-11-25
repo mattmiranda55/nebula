@@ -23,6 +23,7 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
 electron.contextBridge.exposeInMainWorld("db", {
   connect: (config) => electron.ipcRenderer.invoke("db:connect", config),
   query: (sql) => electron.ipcRenderer.invoke("db:query", sql),
+  structure: () => electron.ipcRenderer.invoke("db:structure"),
   disconnect: () => electron.ipcRenderer.invoke("db:disconnect")
 });
 electron.contextBridge.exposeInMainWorld("terminal", {

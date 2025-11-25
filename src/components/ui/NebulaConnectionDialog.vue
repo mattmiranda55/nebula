@@ -172,7 +172,7 @@ function handleSubmit() {
 		:visible="visible"
 		modal
 		:draggable="false"
-		:closable="false"
+		:closable="true"
 		:dismissable-mask="false"
 		class="connection-dialog"
 		header="Create Connection"
@@ -240,7 +240,7 @@ function handleSubmit() {
 					</div>
 				</template>
 
-				<template v-else>
+				<template v-else-if="form.type === 'mongodb'">
 					<div class="field field-span">
 						<label>Connection String</label>
 						<InputText v-model="form.uri" placeholder="mongodb://127.0.0.1:27017" />
