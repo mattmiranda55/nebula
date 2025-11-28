@@ -8,7 +8,7 @@
     "dev:renderer": "vite",
     "dev:main": "concurrently -k -n tsc,electron \"bun run watch:electron\" \"bun run start:electron\"",
     "watch:electron": "tsc -p tsconfig.electron.json --watch --preserveWatchOutput",
-    "start:electron": "ELECTRON_RENDERER_URL=http://localhost:5173 bunx electronmon dist-electron/main.js --watch dist-electron",
+    "start:electron": "ELECTRON_RENDERER_URL=http://localhost:5173 bunx electronmon dist-electron/main.js --watch dist-electron --ignore config.toml",
     "build:electron": "tsc -p tsconfig.electron.json",
     "build": "bun run build:electron && vue-tsc && vite build && electron-builder",
     "preview": "vite preview"

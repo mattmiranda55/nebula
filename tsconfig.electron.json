@@ -12,7 +12,15 @@
     "sourceMap": true,
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
-  "include": ["electron/**/*.ts"]
+  "include": [
+    "electron/**/*.ts",
+    "electron/**/*.cts"
+  ],
+  "exclude": [
+    "electron/preload.ts"
+  ]
 }

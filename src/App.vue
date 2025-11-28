@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch, onMounted } from 'vue';
 import NebulaLayout from './components/layout/NebulaLayout.vue';
 import NebulaSidebar from './components/ui/NebulaSidebar.vue';
 import NebulaHeader from './components/ui/NebulaHeader.vue';
@@ -7,7 +7,13 @@ import NebulaEditor from './components/ui/NebulaEditor.vue';
 import NebulaResults from './components/ui/NebulaResults.vue';
 import NebulaWelcome from './components/ui/NebulaWelcome.vue';
 import NebulaConnectionDialog from './components/ui/NebulaConnectionDialog.vue';
-import type { ConnectPayload, ConnectionInfo, ConnectionStatus, SchemaNode } from './types/database';
+import type {
+  ConnectPayload,
+  ConnectionInfo,
+  ConnectionStatus,
+  PersistConnectionPayload,
+  SchemaNode,
+} from './types/database';
 import { formatConnectionStatus } from './utils/connection';
 
 const connection = reactive({
@@ -62,6 +68,89 @@ function openConnectionDialog() {
   showConnectionDialog.value = true;
 }
 
+async function attemptAutoConnect() {
+  if (connection.status !== 'disconnected') return;
+  if (!window.config?.listConnections || !window.config?.connectSaved || !window.config?.getLastConnection) return;
+
+  try {
+    const { id, error: lastError } = await window.config.getLastConnection();
+    if (lastError || !id) return;
+
+    const { connections, error } = await window.config.listConnections();
+    if (error || !connections?.length) return;
+
+    const saved = connections.find((c) => c.id === id);
+    if (!saved) return;
+
+    connection.status = 'connecting';
+    connection.error = null;
+
+    const response = await window.config.connectSaved(saved.id);
+    if (response?.error) {
+      connection.status = 'error';
+      connection.error = `Failed to restore connection: ${response.error}`;
+      return;
+    }
+
+    let info: ConnectionInfo | null = null;
+    switch (saved.type) {
+      case 'mysql': {
+        info = {
+          type: 'mysql',
+          name: saved.name,
+          host: saved.host || '',
+          port: saved.port ?? 3306,
+          user: saved.user || '',
+          database: saved.database,
+        };
+        break;
+      }
+      case 'postgres': {
+        info = {
+          type: 'postgres',
+          name: saved.name,
+          host: saved.host || '',
+          port: saved.port ?? 5432,
+          user: saved.user || '',
+          database: saved.database || '',
+        };
+        break;
+      }
+      case 'sqlite': {
+        info = {
+          type: 'sqlite',
+          name: saved.name,
+          file: saved.file || '',
+        };
+        break;
+      }
+      case 'mongodb': {
+        info = {
+          type: 'mongodb',
+          name: saved.name,
+          uri: saved.uri || '',
+          database: saved.database,
+        };
+        break;
+      }
+    }
+
+    if (!info) return;
+
+    connection.status = 'connected';
+    connection.info = info;
+    welcomeDismissed.value = true;
+    await loadSchema();
+  } catch (err: any) {
+    connection.status = 'error';
+    connection.error = err?.message ?? 'Failed to reconnect to saved database';
+  }
+}
+
+onMounted(() => {
+  attemptAutoConnect();
+});
+
 async function handleConnect(payload: ConnectPayload) {
   connection.status = 'connecting';
   connection.error = null;
@@ -73,7 +162,7 @@ async function handleConnect(payload: ConnectPayload) {
       throw new Error('Database bridge is not available in this environment.');
     }
 
-    let config: Record<string, any>;
+    let config: PersistConnectionPayload;
     let info: ConnectionInfo;
 
     switch (payload.type) {
@@ -163,6 +252,14 @@ async function handleConnect(payload: ConnectPayload) {
       connection.status = 'error';
       connection.error = response.error;
       return;
+    }
+
+    if (window.config?.saveConnection) {
+      try {
+        await window.config.saveConnection({ ...config, name: displayName });
+      } catch (persistErr: any) {
+        console.warn('Failed to persist connection:', persistErr?.message ?? persistErr);
+      }
     }
 
     connection.status = 'connected';

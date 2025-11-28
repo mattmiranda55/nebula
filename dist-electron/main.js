@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 // Import your DB API (compiled to JS at runtime)
 import * as db from "./db/index.js";
+import { loadConnection, saveConnection, listConnections, getLastConnectionId } from "./config.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let win = null;
@@ -25,7 +26,7 @@ async function createWindow() {
         width: 1200,
         height: 800,
         webPreferences: {
-            preload: path.join(__dirname, "preload.js"),
+            preload: path.join(__dirname, "preload.cjs"),
             contextIsolation: true,
             nodeIntegration: false,
         },
@@ -63,6 +64,12 @@ app.on("window-all-closed", () => {
 //
 // ✅ IPC HANDLERS
 //
+process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled promise rejection in main process:", reason);
+});
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught exception in main process:", err);
+});
 ipcMain.handle("db:connect", async (_, config) => {
     try {
         return await db.connect(config);
@@ -92,6 +99,45 @@ ipcMain.handle("db:disconnect", async () => {
     try {
         await db.disconnect();
         return { success: true };
+    }
+    catch (err) {
+        return { error: err.message };
+    }
+});
+ipcMain.handle("config:save-connection", async (_, config) => {
+    try {
+        const saved = saveConnection(config);
+        return { success: true, connection: saved };
+    }
+    catch (err) {
+        return { error: err.message };
+    }
+});
+ipcMain.handle("config:list-connections", async () => {
+    try {
+        const connections = listConnections();
+        return { connections };
+    }
+    catch (err) {
+        return { error: err.message };
+    }
+});
+ipcMain.handle("config:get-last-connection", async () => {
+    try {
+        const id = getLastConnectionId();
+        return { id };
+    }
+    catch (err) {
+        return { error: err.message };
+    }
+});
+ipcMain.handle("config:connect-saved", async (_, id) => {
+    try {
+        const config = loadConnection(id);
+        if (!config) {
+            return { error: "Connection not found." };
+        }
+        return await db.connect(config);
     }
     catch (err) {
         return { error: err.message };

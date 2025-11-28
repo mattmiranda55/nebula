@@ -75,6 +75,24 @@ export type ConnectPayload =
   | SqliteConnectPayload
   | MongoConnectPayload;
 
+export type PersistConnectionPayload =
+  | (MysqlConnectionInfo & { password?: string; id?: string })
+  | (PostgresConnectionInfo & { password?: string; id?: string })
+  | (SqliteConnectionInfo & { id?: string })
+  | (MongoConnectionInfo & { password?: string; id?: string });
+
+export interface SavedConnectionSummary {
+  id: string;
+  name?: string;
+  type: DatabaseType;
+  host?: string;
+  port?: number;
+  user?: string;
+  database?: string;
+  file?: string;
+  uri?: string;
+}
+
 export interface SchemaNode {
   key: string;
   label: string;

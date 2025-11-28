@@ -1,6 +1,11 @@
 /// <reference types="vite/client" />
 
-import type { ConnectPayload, SchemaNode } from './types/database';
+import type {
+	ConnectPayload,
+	PersistConnectionPayload,
+	SavedConnectionSummary,
+	SchemaNode,
+} from './types/database';
 
 declare module 'monaco-editor/esm/vs/editor/editor.worker?worker' {
 	const EditorWorkerFactory: new () => Worker;
@@ -38,6 +43,17 @@ interface NebulaConnectResponse {
 	error?: string;
 }
 
+interface NebulaConfigBridge {
+	saveConnection(config: PersistConnectionPayload): Promise<{
+		success?: boolean;
+		error?: string;
+		connection?: SavedConnectionSummary;
+	}>;
+	listConnections(): Promise<{ connections?: SavedConnectionSummary[]; error?: string }>;
+	getLastConnection(): Promise<{ id?: string; error?: string }>;
+	connectSaved(id: string): Promise<NebulaConnectResponse>;
+}
+
 interface NebulaDatabaseBridge {
 	connect(config: ConnectPayload): Promise<NebulaConnectResponse>;
 	query(sql: string): Promise<NebulaQueryResult | { error: string }>;
@@ -48,5 +64,6 @@ interface NebulaDatabaseBridge {
 declare global {
 	interface Window {
 		db?: NebulaDatabaseBridge;
+		config?: NebulaConfigBridge;
 	}
 }

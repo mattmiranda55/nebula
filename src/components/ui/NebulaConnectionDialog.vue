@@ -176,127 +176,181 @@ function handleSubmit() {
 		:dismissable-mask="false"
 		class="connection-dialog"
 		header="Create Connection"
+		:style="{ width: '640px', maxWidth: '92vw' }"
+		:breakpoints="{ '960px': '92vw', '640px': '96vw' }"
 		@update:visible="emit('update:visible', $event)"
 	>
 		<div class="dialog-body">
-			<p class="dialog-lead">
-				Connect to your database server to start exploring schemas and running queries.
-			</p>
-
-			<div class="form-grid">
-				<div class="field">
-					<label>Display Name</label>
-					<InputText v-model="form.name" placeholder="Optional label" />
+			<header class="dialog-head">
+				<div>
+					<h3 class="dialog-title">Connection details</h3>
+					<p class="dialog-lead">Fill in the basics. Passwords are stored encrypted with your key.</p>
 				</div>
+				<span class="badge">{{ form.type }}</span>
+			</header>
 
-				<div class="field">
-					<label>Database Type</label>
-					<Dropdown
-						v-model="form.type"
-						:options="databaseOptions"
-						option-label="label"
-						option-value="value"
-					/>
-				</div>
-
-				<template v-if="form.type === 'mysql' || form.type === 'postgres'">
+			<div class="form-card">
+				<div class="form-grid">
 					<div class="field">
-						<label>Host</label>
-						<InputText v-model="form.host" placeholder="127.0.0.1" />
+						<label>Display Name</label>
+						<InputText v-model="form.name" placeholder="Optional label" />
 					</div>
 
 					<div class="field">
-						<label>Port</label>
-						<InputText
-							v-model.number="form.port"
-							type="number"
-							:placeholder="form.type === 'mysql' ? defaultPorts.mysql.toString() : defaultPorts.postgres.toString()"
+						<label>Database Type</label>
+						<Dropdown
+							v-model="form.type"
+							:options="databaseOptions"
+							option-label="label"
+							option-value="value"
 						/>
 					</div>
 
-					<div class="field">
-						<label>Username</label>
-						<InputText v-model="form.user" :placeholder="form.type === 'mysql' ? 'root' : 'postgres'" />
-					</div>
+					<template v-if="form.type === 'mysql' || form.type === 'postgres'">
+						<div class="field">
+							<label>Host</label>
+							<InputText v-model="form.host" placeholder="127.0.0.1" />
+						</div>
 
-					<div class="field">
-						<label>Password</label>
-						<Password v-model="form.password" toggle-mask :feedback="false" input-class="password-input" />
-					</div>
+						<div class="field">
+							<label>Port</label>
+							<InputText
+								v-model.number="form.port as any"
+								type="number"
+								:placeholder="form.type === 'mysql' ? defaultPorts.mysql.toString() : defaultPorts.postgres.toString()"
+							/>
+						</div>
 
-					<div class="field field-span">
-						<label>{{ form.type === 'postgres' ? 'Database' : 'Default Database' }}</label>
-						<InputText
-							v-model="form.database"
-							:placeholder="form.type === 'postgres' ? 'postgres' : 'nebula'"
-						/>
-					</div>
-				</template>
+						<div class="field">
+							<label>Username</label>
+							<InputText v-model="form.user" :placeholder="form.type === 'mysql' ? 'root' : 'postgres'" />
+						</div>
 
-				<template v-else-if="form.type === 'sqlite'">
-					<div class="field field-span">
-						<label>Database File</label>
-						<InputText v-model="form.file" placeholder="/path/to/database.sqlite" />
-					</div>
-				</template>
+						<div class="field">
+							<label>Password</label>
+							<Password v-model="form.password" toggle-mask :feedback="false" input-class="password-input" />
+						</div>
 
-				<template v-else-if="form.type === 'mongodb'">
-					<div class="field field-span">
-						<label>Connection String</label>
-						<InputText v-model="form.uri" placeholder="mongodb://127.0.0.1:27017" />
-					</div>
-					<div class="field">
-						<label>Database (optional)</label>
-						<InputText v-model="form.database" placeholder="admin" />
-					</div>
-				</template>
-			</div>
+						<div class="field field-span">
+							<label>{{ form.type === 'postgres' ? 'Database' : 'Default Database' }}</label>
+							<InputText
+								v-model="form.database"
+								:placeholder="form.type === 'postgres' ? 'postgres' : 'nebula'"
+							/>
+						</div>
+					</template>
 
-			<div v-if="localError || error" class="inline-error">
-				{{ localError || error }}
+					<template v-else-if="form.type === 'sqlite'">
+						<div class="field field-span">
+							<label>Database File</label>
+							<InputText v-model="form.file" placeholder="/path/to/database.sqlite" />
+						</div>
+					</template>
+
+					<template v-else-if="form.type === 'mongodb'">
+						<div class="field field-span">
+							<label>Connection String</label>
+							<InputText v-model="form.uri" placeholder="mongodb://127.0.0.1:27017" />
+						</div>
+						<div class="field">
+							<label>Database (optional)</label>
+							<InputText v-model="form.database" placeholder="admin" />
+						</div>
+					</template>
+				</div>
+
+				<div v-if="localError || error" class="inline-error">
+					{{ localError || error }}
+				</div>
 			</div>
 		</div>
 
 		<template #footer>
 			<div class="dialog-footer">
-				<Button
-					label="Cancel"
-					class="p-button-text"
-					@click="closeDialog"
-				/>
-				<Button
-					label="Connect"
-					:loading="isConnecting"
-					class="p-button-rounded p-button-primary"
-					@click="handleSubmit"
-				/>
+				<div class="footer-note">
+					Connections are stored locally; rotate credentials regularly.
+				</div>
+				<div class="footer-actions">
+					<Button
+						label="Cancel"
+						class="p-button-text"
+						@click="closeDialog"
+					/>
+					<Button
+						label="Connect"
+						:loading="isConnecting"
+						class="p-button-rounded p-button-primary"
+						@click="handleSubmit"
+					/>
+				</div>
 			</div>
 		</template>
 	</Dialog>
 </template>
 
 <style scoped>
-.connection-dialog :deep(.p-dialog-header) {
-	background: linear-gradient(90deg, rgba(32, 27, 61, 0.85), rgba(20, 30, 68, 0.88));
-	border-bottom: 1px solid rgba(127, 90, 240, 0.35);
+:global(.connection-dialog) {
+	background: #0a0e20;
+	border: 1px solid rgba(127, 90, 240, 0.3);
+	box-shadow: var(--shadow-soft);
+}
+
+:global(.connection-dialog .p-dialog-header) {
+	background: linear-gradient(90deg, #201b3d, #141e44);
+	border-bottom: 1px solid rgba(127, 90, 240, 0.4);
 	color: var(--txt-primary);
 }
 
-.connection-dialog :deep(.p-dialog-content) {
-	background: rgba(10, 14, 32, 0.96);
+:global(.connection-dialog .p-dialog-content) {
+	background: #0a0e20;
 	color: var(--txt-primary);
-	padding: 24px 28px;
+	padding: 0;
 }
 
-.connection-dialog :deep(.p-dialog-footer) {
-	background: rgba(10, 14, 32, 0.96);
-	border-top: 1px solid rgba(127, 90, 240, 0.24);
+:global(.connection-dialog .p-dropdown) {
+	background: #121836 !important;
+	border: 1px solid rgba(127, 90, 240, 0.28) !important;
+}
+
+:global(.connection-dialog .p-dropdown-label) {
+	background: transparent;
+	color: var(--txt-primary);
+}
+
+:global(.connection-dialog .p-dropdown .p-dropdown-trigger-icon) {
+	color: var(--txt-secondary);
+}
+
+:global(.connection-dialog .p-dropdown-panel) {
+	background: #0f1534;
+	border: 1px solid rgba(127, 90, 240, 0.35);
+}
+
+:global(.connection-dialog .p-dialog-footer) {
+	background: #0a0e20;
+	border-top: 1px solid rgba(127, 90, 240, 0.3);
+	padding: 16px 22px;
 }
 
 .dialog-body {
+	padding: 22px 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
+	gap: 18px;
+}
+
+.dialog-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.dialog-title {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
 }
 
 .dialog-lead {
@@ -304,6 +358,29 @@ function handleSubmit() {
 	color: var(--txt-secondary);
 	font-size: 14px;
 	line-height: 1.5;
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 6px 10px;
+	border-radius: var(--radius-sm);
+	background: rgba(127, 90, 240, 0.16);
+	border: 1px solid rgba(127, 90, 240, 0.35);
+	color: var(--accent-secondary);
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.form-card {
+	background: #0d1230;
+	border: 1px solid rgba(127, 90, 240, 0.24);
+	border-radius: var(--radius-md);
+	padding: 14px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
 }
 
 .form-grid {
@@ -344,8 +421,21 @@ function handleSubmit() {
 
 .dialog-footer {
 	display: flex;
-	justify-content: flex-end;
+	align-items: center;
+	justify-content: space-between;
 	gap: 12px;
+	background: #0a0e20;
+	border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.footer-note {
+	color: var(--txt-muted);
+	font-size: 12px;
+}
+
+.footer-actions {
+	display: flex;
+	gap: 10px;
 }
 
 @media (max-width: 720px) {
