@@ -1,0 +1,51 @@
+# Nebula Database Client Configuration
+# This file stores your database connections and app settings.
+# Location: ~/.config/nebula/config.toml
+
+# MySQL connections - add as many as needed with unique names
+[mysql.local]
+name = "Local MySQL"
+host = "localhost"
+port = 3306
+username = "root"
+password = ""
+database = ""
+ssl_enabled = false
+
+[mysql.production]
+name = "Production Server"
+host = "db.example.com"
+port = 3306
+username = "admin"
+password = ""
+database = "myapp"
+ssl_enabled = true
+color = "#e74c3c"
+
+# PostgreSQL connections
+[postgres.main]
+name = "Main Postgres"
+host = "localhost"
+port = 5432
+username = "postgres"
+password = ""
+database = "postgres"
+
+# SQLite connections - use 'file' for the database path
+[sqlite.local]
+name = "Local SQLite"
+file = "/path/to/database.db"
+
+# MongoDB connections
+[mongodb.atlas]
+name = "MongoDB Atlas"
+host = "cluster.mongodb.net"
+port = 27017
+username = ""
+password = ""
+database = "admin"
+
+# Application settings
+[nebula]
+last_connection = "mysql.local"
+theme = "dark"
