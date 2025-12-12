@@ -22,13 +22,6 @@ impl QueryEditor {
         Self::default()
     }
 
-    pub fn with_content(content: String) -> Self {
-        Self {
-            content,
-            is_executing: false,
-        }
-    }
-
     pub fn view(&self) -> Element<'_, QueryEditorMessage> {
         let toolbar = row![
             button(

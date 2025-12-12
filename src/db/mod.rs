@@ -13,33 +13,14 @@ pub enum DatabaseError {
     ConnectionFailed(String),
     #[error("Query failed: {0}")]
     QueryFailed(String),
-    #[error("Authentication failed: {0}")]
-    AuthenticationFailed(String),
-    #[error("Database not found: {0}")]
-    DatabaseNotFound(String),
-    #[error("Timeout: {0}")]
-    Timeout(String),
     #[error("Unsupported database type: {0}")]
     UnsupportedType(String),
-    #[error("Internal error: {0}")]
-    Internal(String),
-}
-
-/// Schema object types
-#[derive(Debug, Clone)]
-pub enum SchemaObject {
-    Database(DatabaseInfo),
-    Table(TableInfo),
-    View(ViewInfo),
-    Column(ColumnDetails),
-    Index(IndexInfo),
 }
 
 #[derive(Debug, Clone)]
 pub struct DatabaseInfo {
     pub name: String,
     pub character_set: Option<String>,
-    pub collation: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -55,7 +36,6 @@ pub struct TableInfo {
 #[derive(Debug, Clone)]
 pub struct ViewInfo {
     pub name: String,
-    pub database: String,
     pub definition: Option<String>,
 }
 
@@ -68,15 +48,6 @@ pub struct ColumnDetails {
     pub is_primary_key: bool,
     pub is_auto_increment: bool,
     pub comment: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct IndexInfo {
-    pub name: String,
-    pub table: String,
-    pub columns: Vec<String>,
-    pub is_unique: bool,
-    pub is_primary: bool,
 }
 
 /// Database connection trait

@@ -112,5 +112,5 @@ pub enum ConnectionState {
     Disconnected,
     Connecting,
     Connected,
-    Error(String),
+    Error,
 }

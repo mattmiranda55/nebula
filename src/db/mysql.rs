@@ -93,7 +93,6 @@ impl DatabaseConnection for MySqlConnection {
                 row.try_get::<String, _>(0).ok().map(|name| DatabaseInfo {
                     name,
                     character_set: None,
-                    collation: None,
                 })
             })
             .collect();
@@ -151,7 +150,6 @@ impl DatabaseConnection for MySqlConnection {
                 let name: String = row.try_get(0).ok()?;
                 Some(ViewInfo {
                     name,
-                    database: database.to_string(),
                     definition: row.try_get(1).ok(),
                 })
             })

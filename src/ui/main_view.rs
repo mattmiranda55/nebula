@@ -1,9 +1,8 @@
-use crate::theme::colors;
+use crate::theme::{colors, styles};
 use crate::ui::{
     connection_form::{ConnectionForm, ConnectionFormMessage},
     query_editor::{QueryEditor, QueryEditorMessage},
     results_table::{ResultsTable, ResultsTableMessage},
-    schema_browser::{SchemaBrowser, SchemaBrowserMessage},
     sidebar::{Sidebar, SidebarMessage},
     tabs::{TabBar, TabBarMessage},
 };
@@ -21,7 +20,6 @@ pub enum ViewState {
 #[derive(Debug, Clone)]
 pub enum MainViewMessage {
     Sidebar(SidebarMessage),
-    Schema(SchemaBrowserMessage),
     QueryEditor(QueryEditorMessage),
     Results(ResultsTableMessage),
     Tabs(TabBarMessage),
@@ -31,7 +29,6 @@ pub enum MainViewMessage {
 pub struct MainView {
     pub view_state: ViewState,
     pub sidebar: Sidebar,
-    pub schema_browser: SchemaBrowser,
     pub query_editor: QueryEditor,
     pub results_table: ResultsTable,
     pub tab_bar: TabBar,
@@ -43,7 +40,6 @@ impl Default for MainView {
         Self {
             view_state: ViewState::Welcome,
             sidebar: Sidebar::new(),
-            schema_browser: SchemaBrowser::new(),
             query_editor: QueryEditor::new(),
             results_table: ResultsTable::new(),
             tab_bar: TabBar::new(),
@@ -113,16 +109,16 @@ impl MainView {
                 .into()
             }
             ViewState::Connected => {
-                // Connected view with schema browser, query editor, and results
-                let schema = self.schema_browser.view().map(MainViewMessage::Schema);
+                // Connected view with query editor and results (schema is in sidebar)
                 let tabs = self.tab_bar.view().map(MainViewMessage::Tabs);
                 let editor = self.query_editor.view().map(MainViewMessage::QueryEditor);
                 let results = self.results_table.view().map(MainViewMessage::Results);
 
-                row![
-                    schema,
-                    column![tabs, editor, results,].width(Fill).height(Fill),
-                ]
+                column![
+                    container(tabs).style(styles::toolbar_container),
+                    container(editor).style(styles::content_container),
+                    container(results).style(styles::bordered_panel),
+                ].width(Fill).height(Fill)
                 .into()
             }
         };

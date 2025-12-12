@@ -8,7 +8,6 @@ pub enum ResultsTableMessage {
     NextPage,
     PrevPage,
     ExportResults,
-    CopyCell(usize, usize),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -116,12 +115,15 @@ impl ResultsTable {
                 // Data table
                 let mut table = column![].spacing(0);
 
-                // Header row
+                // Header row with column type info
                 let mut header_row = row![].spacing(0);
                 for col in &result.columns {
+                    let type_indicator = if col.is_primary_key { "🔑 " } else { "" };
+                    let nullable_indicator = if col.nullable { "?" } else { "" };
+                    let header_text = format!("{}{} ({}{})", type_indicator, col.name, col.data_type, nullable_indicator);
                     header_row = header_row.push(
                         container(
-                            text(&col.name)
+                            text(header_text)
                                 .size(12)
                                 .color(colors::TEXT_PRIMARY)
                                 .font(iced::Font::MONOSPACE),
@@ -141,8 +143,14 @@ impl ResultsTable {
                 }
                 table = table.push(header_row);
 
-                // Data rows
-                for (row_idx, data_row) in result.rows.iter().enumerate() {
+                // Calculate pagination
+                let start_idx = self.page * self.page_size;
+                let end_idx = (start_idx + self.page_size).min(result.rows.len());
+                let page_rows = &result.rows[start_idx..end_idx];
+                let total_pages = (result.rows.len() + self.page_size - 1) / self.page_size;
+
+                // Data rows (paginated)
+                for (row_idx, data_row) in page_rows.iter().enumerate() {
                     let mut row_widget = row![].spacing(0);
                     let is_even = row_idx % 2 == 0;
                     let bg_color = if is_even {
@@ -194,7 +202,7 @@ impl ResultsTable {
                 )
                 .height(Fill);
 
-                // Status bar
+                // Status bar with pagination
                 let status_bar = row![
                     text(format!("{} rows", result.rows.len()))
                         .size(12)
@@ -203,6 +211,31 @@ impl ResultsTable {
                     text(format!("{}ms", result.execution_time_ms))
                         .size(12)
                         .color(colors::TEXT_MUTED),
+                    Space::new().width(20),
+                    text(format!("Page {} of {}", self.page + 1, total_pages))
+                        .size(12)
+                        .color(colors::TEXT_MUTED),
+                    Space::new().width(10),
+                    button(text("◀").size(12))
+                        .on_press(ResultsTableMessage::PrevPage)
+                        .padding([4, 8])
+                        .style(|theme: &Theme, status| {
+                            button::Style {
+                                background: Some(Background::Color(Color::TRANSPARENT)),
+                                text_color: colors::TEXT_SECONDARY,
+                                ..button::text(theme, status)
+                            }
+                        }),
+                    button(text("▶").size(12))
+                        .on_press(ResultsTableMessage::NextPage)
+                        .padding([4, 8])
+                        .style(|theme: &Theme, status| {
+                            button::Style {
+                                background: Some(Background::Color(Color::TRANSPARENT)),
+                                text_color: colors::TEXT_SECONDARY,
+                                ..button::text(theme, status)
+                            }
+                        }),
                     Space::new().width(Fill),
                     button(text("Export").size(12))
                         .on_press(ResultsTableMessage::ExportResults)

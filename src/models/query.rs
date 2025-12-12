@@ -27,16 +27,18 @@ impl Default for SavedQuery {
     }
 }
 
-/// Query execution history entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QueryHistoryEntry {
-    pub id: Uuid,
-    pub sql: String,
-    pub connection_id: Uuid,
-    pub executed_at: DateTime<Utc>,
-    pub duration_ms: u64,
-    pub row_count: Option<usize>,
-    pub error: Option<String>,
+impl SavedQuery {
+    pub fn new(name: String, sql: String) -> Self {
+        let now = Utc::now();
+        Self {
+            id: Uuid::new_v4(),
+            name,
+            sql,
+            connection_id: None,
+            created_at: now,
+            updated_at: now,
+        }
+    }
 }
 
 /// Query result data
