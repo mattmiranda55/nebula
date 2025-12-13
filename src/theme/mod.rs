@@ -1,122 +1,75 @@
 // Nebula Theme - Space nebula inspired colors with purples, magentas, and cosmic hues
-use iced::Theme;
+use eframe::egui::{self, Color32, Visuals};
 
-/// Space nebula inspired color palette
-pub mod colors {
-    use iced::Color;
+// Background colors - deep space blacks with subtle purple tint
+pub const BACKGROUND_DARKEST: Color32 = Color32::from_rgb(13, 10, 20);   // #0d0a14 - void black
+pub const BACKGROUND_DARK: Color32 = Color32::from_rgb(20, 15, 31);      // #140f1f - deep space
+pub const BACKGROUND_BASE: Color32 = Color32::from_rgb(26, 20, 38);      // #1a1426 - nebula dark
+pub const BACKGROUND_LIGHT: Color32 = Color32::from_rgb(36, 28, 51);     // #241c33 - nebula mid
+pub const BACKGROUND_LIGHTER: Color32 = Color32::from_rgb(46, 36, 64);   // #2e2440 - nebula light
 
-    // Background colors - deep space blacks with subtle purple tint
-    pub const BACKGROUND_DARKEST: Color = Color::from_rgb(0.05, 0.04, 0.08); // #0d0a14 - void black
-    pub const BACKGROUND_DARK: Color = Color::from_rgb(0.08, 0.06, 0.12); // #140f1f - deep space
-    pub const BACKGROUND_BASE: Color = Color::from_rgb(0.10, 0.08, 0.15); // #1a1426 - nebula dark
-    pub const BACKGROUND_LIGHT: Color = Color::from_rgb(0.14, 0.11, 0.20); // #241c33 - nebula mid
-    pub const BACKGROUND_LIGHTER: Color = Color::from_rgb(0.18, 0.14, 0.25); // #2e2440 - nebula light
+// Primary accent - vibrant purple (main nebula color)
+pub const PRIMARY: Color32 = Color32::from_rgb(153, 82, 230);            // #9952e6 - nebula purple
+pub const PRIMARY_LIGHT: Color32 = Color32::from_rgb(186, 125, 242);     // #ba7df2 - light purple
+pub const PRIMARY_DARK: Color32 = Color32::from_rgb(115, 56, 179);       // #7338b3 - deep purple
 
-    // Primary accent - vibrant purple (main nebula color)
-    pub const PRIMARY: Color = Color::from_rgb(0.60, 0.32, 0.90); // #9952e6 - nebula purple
-    pub const PRIMARY_LIGHT: Color = Color::from_rgb(0.73, 0.49, 0.95); // #ba7df2 - light purple
-    pub const PRIMARY_DARK: Color = Color::from_rgb(0.45, 0.22, 0.70); // #7338b3 - deep purple
+// Secondary - cosmic pink/magenta
+pub const SECONDARY: Color32 = Color32::from_rgb(232, 92, 163);          // #e85ca3 - cosmic pink
 
-    // Secondary - cosmic pink/magenta
-    pub const SECONDARY: Color = Color::from_rgb(0.91, 0.36, 0.64); // #e85ca3 - cosmic pink
+// Tertiary - cyan/teal for contrast (like star colors)
+pub const TERTIARY: Color32 = Color32::from_rgb(77, 199, 230);           // #4dc7e6 - stellar cyan
 
-    // Tertiary - cyan/teal for contrast (like star colors)
-    pub const TERTIARY: Color = Color::from_rgb(0.30, 0.78, 0.90); // #4dc7e6 - stellar cyan
+// Text colors - starlight whites
+pub const TEXT_PRIMARY: Color32 = Color32::from_rgb(240, 235, 247);      // #f0ebf7 - starlight
+pub const TEXT_SECONDARY: Color32 = Color32::from_rgb(179, 166, 199);    // #b3a6c7 - dim starlight
+pub const TEXT_MUTED: Color32 = Color32::from_rgb(128, 115, 148);        // #807394 - distant stars
 
-    // Text colors - starlight whites
-    pub const TEXT_PRIMARY: Color = Color::from_rgb(0.94, 0.92, 0.97); // #f0ebf7 - starlight
-    pub const TEXT_SECONDARY: Color = Color::from_rgb(0.70, 0.65, 0.78); // #b3a6c7 - dim starlight
-    pub const TEXT_MUTED: Color = Color::from_rgb(0.50, 0.45, 0.58); // #807394 - distant stars
+// Status colors
+pub const SUCCESS: Color32 = Color32::from_rgb(102, 217, 153);           // #66d999 - aurora green
+pub const WARNING: Color32 = Color32::from_rgb(242, 191, 89);            // #f2bf59 - solar flare
+pub const DANGER: Color32 = Color32::from_rgb(242, 89, 115);             // #f25973 - red giant
+pub const INFO: Color32 = Color32::from_rgb(102, 179, 242);              // #66b3f2 - blue star
 
-    // Status colors
-    pub const SUCCESS: Color = Color::from_rgb(0.40, 0.85, 0.60); // #66d999 - aurora green
-    pub const WARNING: Color = Color::from_rgb(0.95, 0.75, 0.35); // #f2bf59 - solar flare
-    pub const DANGER: Color = Color::from_rgb(0.95, 0.35, 0.45); // #f25973 - red giant
-    pub const INFO: Color = Color::from_rgb(0.40, 0.70, 0.95); // #66b3f2 - blue star
+// Borders - subtle purple-tinted
+pub const BORDER: Color32 = Color32::from_rgb(64, 51, 89);               // #403359 - nebula edge
 
-    // Borders - subtle purple-tinted
-    pub const BORDER: Color = Color::from_rgb(0.25, 0.20, 0.35); // #403359 - nebula edge
+/// Creates the custom Nebula dark visuals for egui
+pub fn dark_visuals() -> Visuals {
+    let mut visuals = Visuals::dark();
+    
+    visuals.panel_fill = BACKGROUND_BASE;
+    visuals.window_fill = BACKGROUND_DARK;
+    visuals.extreme_bg_color = BACKGROUND_DARKEST;
+    visuals.faint_bg_color = BACKGROUND_LIGHT;
+    
+    visuals.widgets.noninteractive.bg_fill = BACKGROUND_LIGHT;
+    visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, TEXT_SECONDARY);
+    visuals.widgets.noninteractive.bg_stroke = egui::Stroke::new(1.0, BORDER);
+    
+    visuals.widgets.inactive.bg_fill = BACKGROUND_LIGHT;
+    visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, TEXT_PRIMARY);
+    visuals.widgets.inactive.bg_stroke = egui::Stroke::new(1.0, BORDER);
+    
+    visuals.widgets.hovered.bg_fill = BACKGROUND_LIGHTER;
+    visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, TEXT_PRIMARY);
+    visuals.widgets.hovered.bg_stroke = egui::Stroke::new(1.0, PRIMARY);
+    
+    visuals.widgets.active.bg_fill = PRIMARY_DARK;
+    visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0, TEXT_PRIMARY);
+    visuals.widgets.active.bg_stroke = egui::Stroke::new(1.0, PRIMARY);
+    
+    visuals.selection.bg_fill = PRIMARY_DARK;
+    visuals.selection.stroke = egui::Stroke::new(1.0, PRIMARY);
+    
+    visuals.hyperlink_color = PRIMARY_LIGHT;
+    visuals.warn_fg_color = WARNING;
+    visuals.error_fg_color = DANGER;
+    
+    visuals.window_stroke = egui::Stroke::new(1.0, BORDER);
+    visuals.window_shadow = egui::epaint::Shadow::NONE;
+    
+    visuals.striped = true;
+    
+    visuals
 }
 
-/// IBM Plex Mono font
-pub mod fonts {
-    use iced::Font;
-
-    pub const IBM_PLEX_MONO: Font = Font::with_name("IBM Plex Mono");
-    pub const IBM_PLEX_MONO_BYTES: &[u8] = include_bytes!("../../assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf");
-    pub const IBM_PLEX_MONO_BOLD_BYTES: &[u8] = include_bytes!("../../assets/fonts/IBM_Plex_Mono/IBMPlexMono-Bold.ttf");
-}
-
-/// Creates the custom Nebula dark theme
-pub fn nebula_theme() -> Theme {
-    Theme::custom(
-        "Nebula".to_string(),
-        iced::theme::Palette {
-            background: colors::BACKGROUND_BASE,
-            text: colors::TEXT_PRIMARY,
-            primary: colors::PRIMARY,
-            success: colors::SUCCESS,
-            warning: colors::WARNING,
-            danger: colors::DANGER,
-        },
-    )
-}
-
-/// Widget style constants
-pub mod styles {
-    use super::colors;
-    use iced::widget::container;
-    use iced::{Background, Border, Color, Theme};
-
-    // Sidebar panel style
-    pub fn sidebar_container(_theme: &Theme) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(colors::BACKGROUND_DARK)),
-            border: Border {
-                radius: 0.0.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            ..Default::default()
-        }
-    }
-
-    // Main content area style
-    pub fn content_container(_theme: &Theme) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(colors::BACKGROUND_BASE)),
-            border: Border {
-                radius: 0.0.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            ..Default::default()
-        }
-    }
-
-    // Toolbar style
-    pub fn toolbar_container(_theme: &Theme) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(colors::BACKGROUND_DARKEST)),
-            border: Border {
-                radius: 0.0.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            ..Default::default()
-        }
-    }
-
-    // Panel with border style
-    pub fn bordered_panel(_theme: &Theme) -> container::Style {
-        container::Style {
-            background: Some(Background::Color(colors::BACKGROUND_LIGHT)),
-            border: Border {
-                radius: 6.0.into(),
-                width: 1.0,
-                color: colors::BORDER,
-            },
-            ..Default::default()
-        }
-    }
-}

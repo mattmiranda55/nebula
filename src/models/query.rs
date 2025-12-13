@@ -86,3 +86,9 @@ impl std::fmt::Display for CellValue {
         }
     }
 }
+
+impl CellValue {
+    pub fn display_string(&self) -> String {
+        self.to_string()
+    }
+}

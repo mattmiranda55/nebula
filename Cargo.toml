@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# GUI
-iced = { version = "0.14.0", features = ["wgpu", "image", "tokio"] }
 
 # Async runtime
 tokio = { version = "1.42", features = ["full"] }
@@ -34,3 +32,6 @@ url = "2.5"
 # Logging
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+eframe = "0.33.3"
+egui = "0.33.3"
+egui_extras = { version = "0.33.3", features = ["all_loaders"] }
