@@ -35,3 +35,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 eframe = "0.33.3"
 egui = "0.33.3"
 egui_extras = { version = "0.33.3", features = ["all_loaders"] }
+egui_phosphor_icons = "0.2.0"

@@ -69,6 +69,49 @@ impl MySqlConnection {
         }
         values
     }
+    
+    async fn get_primary_key_columns(&self, database: &str, table: &str) -> Result<Vec<String>, DatabaseError> {
+        let sql = format!(
+            "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE 
+             WHERE TABLE_SCHEMA = '{}' AND TABLE_NAME = '{}' AND CONSTRAINT_NAME = 'PRIMARY'",
+            database, table
+        );
+        
+        let rows: Vec<MySqlRow> = sqlx::query(&sql)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|e| DatabaseError::QueryFailed(e.to_string()))?;
+        
+        let pk_columns: Vec<String> = rows.iter()
+            .filter_map(|row| row.try_get::<String, _>("COLUMN_NAME").ok())
+            .collect();
+        
+        Ok(pk_columns)
+    }
+    
+    fn extract_table_from_sql(sql: &str) -> Option<(String, String)> {
+        let sql_upper = sql.to_uppercase();
+        
+        // Find FROM clause
+        let from_idx = sql_upper.find("FROM")?;
+        let after_from = sql[from_idx + 4..].trim_start();
+        
+        // Get the table reference (until whitespace, semicolon, or keywords)
+        let table_ref: String = after_from
+            .chars()
+            .take_while(|c| !c.is_whitespace() && *c != ';')
+            .collect();
+        
+        // Remove backticks
+        let table_ref = table_ref.replace('`', "");
+        
+        // Split by dot for database.table format
+        let parts: Vec<&str> = table_ref.split('.').collect();
+        match parts.len() {
+            2 => Some((parts[0].to_string(), parts[1].to_string())),
+            _ => None, // Need database.table format for reliable PK detection
+        }
+    }
 }
 
 #[async_trait]
@@ -224,7 +267,7 @@ impl DatabaseConnection for MySqlConnection {
         }
 
         // Extract column info from first row
-        let columns: Vec<ColumnInfo> = rows[0]
+        let mut columns: Vec<ColumnInfo> = rows[0]
             .columns()
             .iter()
             .map(|col| ColumnInfo {
@@ -234,6 +277,17 @@ impl DatabaseConnection for MySqlConnection {
                 is_primary_key: false,
             })
             .collect();
+        
+        // Try to detect primary keys by parsing the query and checking table metadata
+        if let Some((database, table)) = Self::extract_table_from_sql(sql) {
+            if let Ok(pk_columns) = self.get_primary_key_columns(&database, &table).await {
+                for col in &mut columns {
+                    if pk_columns.contains(&col.name) {
+                        col.is_primary_key = true;
+                    }
+                }
+            }
+        }
 
         let data_rows: Vec<Vec<CellValue>> =
             rows.iter().map(|row| Self::row_to_values(row)).collect();

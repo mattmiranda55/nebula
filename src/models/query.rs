@@ -2,6 +2,33 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+/// How to display boolean values
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BoolDisplayFormat {
+    #[default]
+    Checkbox,
+    TrueFalse,
+    OneZero,
+}
+
+impl BoolDisplayFormat {
+    pub fn display(&self, value: bool) -> String {
+        match self {
+            BoolDisplayFormat::Checkbox => if value { "☑" } else { "☐" }.to_string(),
+            BoolDisplayFormat::TrueFalse => if value { "true" } else { "false" }.to_string(),
+            BoolDisplayFormat::OneZero => if value { "1" } else { "0" }.to_string(),
+        }
+    }
+    
+    pub fn label(&self) -> &'static str {
+        match self {
+            BoolDisplayFormat::Checkbox => "Checkbox",
+            BoolDisplayFormat::TrueFalse => "true/false",
+            BoolDisplayFormat::OneZero => "1/0",
+        }
+    }
+}
+
 /// A saved query
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedQuery {
@@ -90,5 +117,61 @@ impl std::fmt::Display for CellValue {
 impl CellValue {
     pub fn display_string(&self) -> String {
         self.to_string()
+    }
+    
+    pub fn display_with_format(&self, bool_format: BoolDisplayFormat) -> String {
+        match self {
+            CellValue::Bool(b) => bool_format.display(*b),
+            _ => self.to_string(),
+        }
+    }
+    
+    /// Convert to SQL literal for use in UPDATE statements
+    pub fn to_sql_literal(&self) -> String {
+        match self {
+            CellValue::Null => "NULL".to_string(),
+            CellValue::Bool(b) => if *b { "TRUE" } else { "FALSE" }.to_string(),
+            CellValue::Int(i) => i.to_string(),
+            CellValue::Float(f) => f.to_string(),
+            CellValue::String(s) => format!("'{}'", s.replace('\'', "''")),
+            CellValue::Bytes(_) => "NULL".to_string(), // Can't easily edit bytes
+            CellValue::DateTime(dt) => format!("'{}'", dt),
+            CellValue::Json(j) => format!("'{}'", j.replace('\'', "''")),
+        }
+    }
+    
+    /// Parse a string into a CellValue based on the original type
+    pub fn parse_from_string(s: &str, original: &CellValue) -> CellValue {
+        if s.eq_ignore_ascii_case("null") {
+            return CellValue::Null;
+        }
+        
+        match original {
+            CellValue::Null => {
+                // Try to infer type from string
+                if let Ok(i) = s.parse::<i64>() {
+                    CellValue::Int(i)
+                } else if let Ok(f) = s.parse::<f64>() {
+                    CellValue::Float(f)
+                } else if s.eq_ignore_ascii_case("true") || s.eq_ignore_ascii_case("false") {
+                    CellValue::Bool(s.eq_ignore_ascii_case("true"))
+                } else {
+                    CellValue::String(s.to_string())
+                }
+            }
+            CellValue::Bool(_) => {
+                CellValue::Bool(s.eq_ignore_ascii_case("true") || s == "1")
+            }
+            CellValue::Int(_) => {
+                s.parse::<i64>().map(CellValue::Int).unwrap_or(CellValue::String(s.to_string()))
+            }
+            CellValue::Float(_) => {
+                s.parse::<f64>().map(CellValue::Float).unwrap_or(CellValue::String(s.to_string()))
+            }
+            CellValue::String(_) => CellValue::String(s.to_string()),
+            CellValue::Bytes(_) => CellValue::String(s.to_string()),
+            CellValue::DateTime(_) => CellValue::DateTime(s.to_string()),
+            CellValue::Json(_) => CellValue::Json(s.to_string()),
+        }
     }
 }
